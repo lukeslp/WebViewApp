@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
 
     private val webView: WebView by lazy { findViewById(R.id.webView) }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
