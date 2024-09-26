@@ -1,7 +1,7 @@
 package com.shifthackz.webviewapp
 
 import android.annotation.SuppressLint
-import android.content.Intent
+//import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -32,26 +32,30 @@ class MainActivity : AppCompatActivity() {
         }
 
         // For API 21 and above
-        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
             val url = request?.url?.toString()
             if (url != null) {
                 // Check for Google Sign-In or other secure operations
-                if (url.startsWith("https://accounts.google.com") ||
-                    url.startsWith("your_other_secure_url_prefix")) {
+                if (url.startsWith("https://accounts.google.com"))
+//                    url.startsWith("https://assisted.space")) ||
+//                    url.startsWith("https://lukesteuber") ||
+//                    url.startsWith("https://coolhand"))
+
+                {
                     // Open these URLs in a Custom Tab or external browser
                     openInCustomTab(url)
                     return true
-                } else if (!url.startsWith(APP_URL)) {
-                    // Open external URLs in a Custom Tab or external browser
-                    openInCustomTab(url)
-                    return true
+//                } else if (!url.startsWith(APP_URL)) {
+//                    // Open external URLs in a Custom Tab or external browser
+//                    openInCustomTab(url)
+//                    return true
                 }
             }
             return false
         }
 
         // For older API versions (below API 21)
+        @Deprecated("Deprecated in Java")
         override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
             if (url != null && !url.startsWith(APP_URL)) {
                 openInCustomTab(url)
@@ -88,6 +92,7 @@ class MainActivity : AppCompatActivity() {
     // Function to open URL in a Custom Tab
     private fun openInCustomTab(url: String) {
         val builder = CustomTabsIntent.Builder()
+        builder.setShowTitle(false) // Hide the title bar
         val customTabsIntent = builder.build()
         customTabsIntent.launchUrl(this, Uri.parse(url))
     }
