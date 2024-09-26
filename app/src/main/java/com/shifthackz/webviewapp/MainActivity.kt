@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         private const val APP_URL = "https://ai.assisted.space"
     }
 
+    // WebViewClient to handle URL loading and errors
     private val appWebViewClient = object : WebViewClient() {
 
         @RequiresApi(Build.VERSION_CODES.M)
@@ -27,9 +28,11 @@ class MainActivity : AppCompatActivity() {
             error: WebResourceError?
         ) {
             super.onReceivedError(view, request, error)
-            error?.description?.toString()?.let(::showError)
+            error?.description?.toString()?.let { showError(it) }
         }
 
+        // For API 21 and above
+        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
             val url = request?.url?.toString()
             if (url != null) {
@@ -39,10 +42,20 @@ class MainActivity : AppCompatActivity() {
                     // Open these URLs in a Custom Tab or external browser
                     openInCustomTab(url)
                     return true
-                } else {
-                    // For other URLs, let the WebView handle them
-                    return false // This is important to enable JavaScript and other features
+                } else if (!url.startsWith(APP_URL)) {
+                    // Open external URLs in a Custom Tab or external browser
+                    openInCustomTab(url)
+                    return true
                 }
+            }
+            return false
+        }
+
+        // For older API versions (below API 21)
+        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+            if (url != null && !url.startsWith(APP_URL)) {
+                openInCustomTab(url)
+                return true
             }
             return false
         }
@@ -55,27 +68,31 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Handle back button press in WebView
         onBackPressedDispatcher.addCallback(this, true) {
             if (webView.canGoBack()) webView.goBack()
             else finish()
         }
 
+        // WebView settings
         webView.apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true // Enable DOM storage for JavaScript
-            settings.javaScriptCanOpenWindowsAutomatically = true // Allow JavaScript to open windows
+            settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE // Allow mixed content (HTTP & HTTPS)
             webViewClient = appWebViewClient
-            webView.settings.safeBrowsingEnabled = false
+            settings.safeBrowsingEnabled = false // Disable Safe Browsing (optional)
             loadUrl(APP_URL)
         }
     }
 
+    // Function to open URL in a Custom Tab
     private fun openInCustomTab(url: String) {
         val builder = CustomTabsIntent.Builder()
         val customTabsIntent = builder.build()
         customTabsIntent.launchUrl(this, Uri.parse(url))
     }
 
+    // Function to show error messages in a Toast
     private fun showError(error: String) {
         Toast.makeText(this@MainActivity, error, Toast.LENGTH_LONG).show()
     }
